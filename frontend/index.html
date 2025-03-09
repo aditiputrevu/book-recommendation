@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Recommender</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <h1>Book Recommender</h1>
+    <div class="mood-selector">
+        <button data-mood="sad">Sad</button>
+        <button data-mood="happy">Happy</button>
+        <button data-mood="anxious">Anxious</button>
+        <button data-mood="neutral">Neutral</button>
+        <button data-mood="tired">Tired</button>
+        <button data-mood="angry">Angry</button>
+    </div>
+    <div class="filters">
+        <select id="genre-filter">
+            <option value="all">All Genres</option>
+            <option value="fiction">Fiction</option>
+            <option value="non-fiction">Non-Fiction</option>
+            <option value="mystery">Mystery</option>
+            <option value="sci-fi">Sci-Fi</option>
+            <option value="romance">Romance</option>
+        </select>
+        <input type="range" id="popularity-filter" min="1" max="10" value="1">
+        <span id="popularity-value">1</span>
+    </div>
+    <div class="book-grid"></div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
