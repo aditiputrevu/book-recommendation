@@ -1,38 +1,59 @@
-async function getBooks(mood, genre, popularity) {
-    const response = await fetch(`http://localhost:5002/api/books?mood=${mood}&genre=${genre}&popularity=${popularity}`);
-    const data = await response.json();
-    return data;
-}
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const Book = require('./models/book');
 
-function displayBooks(books) {
-    const bookGrid = document.querySelector('.book-grid');
-    bookGrid.innerHTML = books.map(book => `
-    <div class="book-card">
-      <img src="${book.cover}" alt="${book.title}">
-      <h3>${book.title}</h3>
-      <p>Author: ${book.author}</p>
-      <p>Genre: ${book.genre}</p>
-      <p>Popularity: ${book.popularity}</p>
-    </div>
-  `).join('');
-}
+const app = express();
+app.use(express.json());
+app.use(cors());
 
-document.querySelector('.mood-selector').addEventListener('click', async (e) => {
-    if (e.target.tagName === 'BUTTON') {
-        const mood = e.target.dataset.mood;
-        const genre = document.getElementById('genre-filter').value;
-        const popularity = document.getElementById('popularity-filter').value;
-        const books = await getBooks(mood, genre, popularity);
-        displayBooks(books);
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(error => console.error('MongoDB connection error:', error));
+
+// GET /api/books - Fetch books based on mood, genre, and popularity
+app.get('/api/books', async (req, res) => {
+    try {
+        const { mood, genre, popularity } = req.query;
+
+        // Build the filter object
+        const filters = {};
+        if (mood) filters.mood = mood;
+        if (genre && genre !== 'all') filters.genre = genre;
+        if (popularity) filters.popularity = { $gte: parseInt(popularity) };
+
+        // Fetch books from the database
+        const books = await Book.find(filters);
+        res.json(books);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching books', error });
     }
 });
 
-document.getElementById('popularity-filter').addEventListener('input', (e) => {
-    document.getElementById('popularity-value').textContent = e.target.value;
+// POST /api/books - Add a new book to the database
+app.post('/api/books', async (req, res) => {
+    try {
+        const { title, author, genre, release_date, popularity, mood, cover, description } = req.body;
+
+        // Validate required fields
+        if (!title || !author || !genre || !release_date || !popularity || !mood || !cover) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        // Create a new book
+        const newBook = new Book({ title, author, genre, release_date, popularity, mood, cover, description });
+        await newBook.save();
+
+        res.status(201).json({ message: 'Book added successfully', book: newBook });
+    } catch (error) {
+        res.status(500).json({ message: 'Error adding book', error });
+    }
 });
 
-// Load default books on page load
-window.addEventListener('load', async () => {
-    const books = await getBooks('neutral', 'all', 1);
-    displayBooks(books);
+// Start the server
+const PORT = process.env.PORT || 5003;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
