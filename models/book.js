@@ -6,7 +6,7 @@ const bookSchema = new mongoose.Schema({
     genre: { type: String, required: true },
     release_date: { type: Date, required: true },
     popularity: { type: Number, required: true, min: 1, max: 10 },
-    mood: { type: String, required: true },
+    mood: { type: String, required: true, enum: ['sad', 'happy', 'anxious', 'neutral', 'tired', 'angry'] },
     cover: { type: String, required: true },
     description: { type: String }
 });
